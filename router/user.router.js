@@ -1,6 +1,6 @@
 import express from 'express';
 import { userLogin, userRegister } from '../controller/user.controller.js';
-import { userRegisterVal } from '../validation/user.validation.js';
+import { userLoginVal, userRegisterVal } from '../validation/user.validation.js';
 
 const userRouter = express.Router();
 
@@ -8,7 +8,7 @@ const userRouter = express.Router();
 userRouter.post('/register', userRegisterVal, userRegister);
 
 // user login path 
-userRouter.post('/login', userLogin);
+userRouter.post('/login', userLoginVal, userLogin);
 
 
 export default userRouter;

@@ -1,6 +1,7 @@
 import { validationResult } from "express-validator";
 import bcrypt from 'bcrypt';
 import userModel from "../models/user.model.js";
+import jwt from 'jsonwebtoken';
 
 export const userRegister = async (req, res) => {
 
@@ -41,9 +42,39 @@ export const userRegister = async (req, res) => {
 }
 
 export const userLogin = async (req, res) => {
+
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+        return res.status(400).json({
+            errors: errors.array(),
+            message: 'Validation failed',
+        });
+    }
+
+    const { email, password } = req.body;
     try {
-        console.log('Success');
+        const checkMail = await userModel.findOne({ email });
+        if (!checkMail) {
+            return res.status(400).json({
+                message: 'Invalid user email',
+            });
+        }
+
+        const comparePass = await bcrypt.compare(password, checkMail.password);
+
+        if (!comparePass) {
+            return res.status(400).json({
+                message: 'Invalid user password',
+            });
+        }
+
+        const token = jwt.sign({ userid: checkMail._id }, process.env.USER_JWT, {
+            expiresIn: '2m',
+        });
+
+        return res.json({ token });
     } catch (error) {
-        console.error(error.message);
+        res.status(500).json({ message: 'Somethink went wrong..!' });
     }
 }
